@@ -7,11 +7,35 @@ output:
     keep_md: true
 ---
 
-
+# PA2_template
 ## PA2_template
 
 - Remove all objects from the workspace 
+- Pull data into a data.frame using read.csv and do so setting strings as Factors to False
 
-```{r}
+```{r, cache=TRUE}
 rm(list=ls())
+df <- read.csv('repdata-data-StormData.csv', stringsAsFactors=FALSE)
+str(df)
+summary(df)
+```
+
+Answer the question - which types of events based on EVTYPE are most harmful.
+Will first determines which event types cause the most injuries..
+
+- Aggregate the data based on INJURIES against EVTYPE
+- Display Top 10 Event Types based on sum of Injuries for the EVTYPE
+
+```{r, cache=TRUE}
+dfa_injuries <- aggregate(INJURIES ~ EVTYPE, data=df, FUN=sum, na.rm=T)
+head(dfa_injuries[order(-dfa_injuries$INJURIES), ], 10)
+```
+
+Now determine which event types cause the most fatalities
+- Aggregate the data based on FATALITIES against EVTYPE
+- Display Top 10 Event Types based on sum of Fatalities for the EVTYPE
+
+```{r, cache=TRUE}
+dfa_fatalities <- aggregate(FATALITIES ~ EVTYPE, data=df, FUN=sum, na.rm=T)
+head(dfa_fatalities[order(-dfa_fatalities$FATALITIES), ], 10)
 ```

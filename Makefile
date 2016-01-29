@@ -1,7 +1,7 @@
 all: PA2_template.html
 
 PA2_template.html: PA2_template.Rmd
-	R -e "rmarkdown::render('PA2_template.Rmd')"
+	R -e "rmarkdown::render('PA2_template.Rmd', 'all')"
 	open PA2_template.html 
 
 .PHONY: clean

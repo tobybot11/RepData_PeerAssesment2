@@ -68,12 +68,177 @@ img {
 </div>
 
 
-<div id="pa2_template" class="section level2">
+<div id="pa2_template" class="section level1">
+<h1>PA2_template</h1>
+<div id="pa2_template-1" class="section level2">
 <h2>PA2_template</h2>
 <ul>
 <li>Remove all objects from the workspace</li>
+<li>Pull data into a data.frame using read.csv and do so setting strings as Factors to False</li>
 </ul>
-<pre class="r"><code>rm(list=ls())</code></pre>
+<pre class="r"><code>rm(list=ls())
+df &lt;- read.csv('repdata-data-StormData.csv', stringsAsFactors=FALSE)
+str(df)</code></pre>
+<pre><code>## 'data.frame':    902297 obs. of  37 variables:
+##  $ STATE__   : num  1 1 1 1 1 1 1 1 1 1 ...
+##  $ BGN_DATE  : chr  &quot;4/18/1950 0:00:00&quot; &quot;4/18/1950 0:00:00&quot; &quot;2/20/1951 0:00:00&quot; &quot;6/8/1951 0:00:00&quot; ...
+##  $ BGN_TIME  : chr  &quot;0130&quot; &quot;0145&quot; &quot;1600&quot; &quot;0900&quot; ...
+##  $ TIME_ZONE : chr  &quot;CST&quot; &quot;CST&quot; &quot;CST&quot; &quot;CST&quot; ...
+##  $ COUNTY    : num  97 3 57 89 43 77 9 123 125 57 ...
+##  $ COUNTYNAME: chr  &quot;MOBILE&quot; &quot;BALDWIN&quot; &quot;FAYETTE&quot; &quot;MADISON&quot; ...
+##  $ STATE     : chr  &quot;AL&quot; &quot;AL&quot; &quot;AL&quot; &quot;AL&quot; ...
+##  $ EVTYPE    : chr  &quot;TORNADO&quot; &quot;TORNADO&quot; &quot;TORNADO&quot; &quot;TORNADO&quot; ...
+##  $ BGN_RANGE : num  0 0 0 0 0 0 0 0 0 0 ...
+##  $ BGN_AZI   : chr  &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; ...
+##  $ BGN_LOCATI: chr  &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; ...
+##  $ END_DATE  : chr  &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; ...
+##  $ END_TIME  : chr  &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; ...
+##  $ COUNTY_END: num  0 0 0 0 0 0 0 0 0 0 ...
+##  $ COUNTYENDN: logi  NA NA NA NA NA NA ...
+##  $ END_RANGE : num  0 0 0 0 0 0 0 0 0 0 ...
+##  $ END_AZI   : chr  &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; ...
+##  $ END_LOCATI: chr  &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; ...
+##  $ LENGTH    : num  14 2 0.1 0 0 1.5 1.5 0 3.3 2.3 ...
+##  $ WIDTH     : num  100 150 123 100 150 177 33 33 100 100 ...
+##  $ F         : int  3 2 2 2 2 2 2 1 3 3 ...
+##  $ MAG       : num  0 0 0 0 0 0 0 0 0 0 ...
+##  $ FATALITIES: num  0 0 0 0 0 0 0 0 1 0 ...
+##  $ INJURIES  : num  15 0 2 2 2 6 1 0 14 0 ...
+##  $ PROPDMG   : num  25 2.5 25 2.5 2.5 2.5 2.5 2.5 25 25 ...
+##  $ PROPDMGEXP: chr  &quot;K&quot; &quot;K&quot; &quot;K&quot; &quot;K&quot; ...
+##  $ CROPDMG   : num  0 0 0 0 0 0 0 0 0 0 ...
+##  $ CROPDMGEXP: chr  &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; ...
+##  $ WFO       : chr  &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; ...
+##  $ STATEOFFIC: chr  &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; ...
+##  $ ZONENAMES : chr  &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; ...
+##  $ LATITUDE  : num  3040 3042 3340 3458 3412 ...
+##  $ LONGITUDE : num  8812 8755 8742 8626 8642 ...
+##  $ LATITUDE_E: num  3051 0 0 0 0 ...
+##  $ LONGITUDE_: num  8806 0 0 0 0 ...
+##  $ REMARKS   : chr  &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; ...
+##  $ REFNUM    : num  1 2 3 4 5 6 7 8 9 10 ...</code></pre>
+<pre class="r"><code>summary(df)</code></pre>
+<pre><code>##     STATE__       BGN_DATE           BGN_TIME          TIME_ZONE        
+##  Min.   : 1.0   Length:902297      Length:902297      Length:902297     
+##  1st Qu.:19.0   Class :character   Class :character   Class :character  
+##  Median :30.0   Mode  :character   Mode  :character   Mode  :character  
+##  Mean   :31.2                                                           
+##  3rd Qu.:45.0                                                           
+##  Max.   :95.0                                                           
+##                                                                         
+##      COUNTY       COUNTYNAME           STATE              EVTYPE         
+##  Min.   :  0.0   Length:902297      Length:902297      Length:902297     
+##  1st Qu.: 31.0   Class :character   Class :character   Class :character  
+##  Median : 75.0   Mode  :character   Mode  :character   Mode  :character  
+##  Mean   :100.6                                                           
+##  3rd Qu.:131.0                                                           
+##  Max.   :873.0                                                           
+##                                                                          
+##    BGN_RANGE          BGN_AZI           BGN_LOCATI       
+##  Min.   :   0.000   Length:902297      Length:902297     
+##  1st Qu.:   0.000   Class :character   Class :character  
+##  Median :   0.000   Mode  :character   Mode  :character  
+##  Mean   :   1.484                                        
+##  3rd Qu.:   1.000                                        
+##  Max.   :3749.000                                        
+##                                                          
+##    END_DATE           END_TIME           COUNTY_END COUNTYENDN    
+##  Length:902297      Length:902297      Min.   :0    Mode:logical  
+##  Class :character   Class :character   1st Qu.:0    NA's:902297   
+##  Mode  :character   Mode  :character   Median :0                  
+##                                        Mean   :0                  
+##                                        3rd Qu.:0                  
+##                                        Max.   :0                  
+##                                                                   
+##    END_RANGE          END_AZI           END_LOCATI       
+##  Min.   :  0.0000   Length:902297      Length:902297     
+##  1st Qu.:  0.0000   Class :character   Class :character  
+##  Median :  0.0000   Mode  :character   Mode  :character  
+##  Mean   :  0.9862                                        
+##  3rd Qu.:  0.0000                                        
+##  Max.   :925.0000                                        
+##                                                          
+##      LENGTH              WIDTH                F               MAG         
+##  Min.   :   0.0000   Min.   :   0.000   Min.   :0.0      Min.   :    0.0  
+##  1st Qu.:   0.0000   1st Qu.:   0.000   1st Qu.:0.0      1st Qu.:    0.0  
+##  Median :   0.0000   Median :   0.000   Median :1.0      Median :   50.0  
+##  Mean   :   0.2301   Mean   :   7.503   Mean   :0.9      Mean   :   46.9  
+##  3rd Qu.:   0.0000   3rd Qu.:   0.000   3rd Qu.:1.0      3rd Qu.:   75.0  
+##  Max.   :2315.0000   Max.   :4400.000   Max.   :5.0      Max.   :22000.0  
+##                                         NA's   :843563                    
+##    FATALITIES          INJURIES            PROPDMG       
+##  Min.   :  0.0000   Min.   :   0.0000   Min.   :   0.00  
+##  1st Qu.:  0.0000   1st Qu.:   0.0000   1st Qu.:   0.00  
+##  Median :  0.0000   Median :   0.0000   Median :   0.00  
+##  Mean   :  0.0168   Mean   :   0.1557   Mean   :  12.06  
+##  3rd Qu.:  0.0000   3rd Qu.:   0.0000   3rd Qu.:   0.50  
+##  Max.   :583.0000   Max.   :1700.0000   Max.   :5000.00  
+##                                                          
+##   PROPDMGEXP           CROPDMG         CROPDMGEXP       
+##  Length:902297      Min.   :  0.000   Length:902297     
+##  Class :character   1st Qu.:  0.000   Class :character  
+##  Mode  :character   Median :  0.000   Mode  :character  
+##                     Mean   :  1.527                     
+##                     3rd Qu.:  0.000                     
+##                     Max.   :990.000                     
+##                                                         
+##      WFO             STATEOFFIC         ZONENAMES            LATITUDE   
+##  Length:902297      Length:902297      Length:902297      Min.   :   0  
+##  Class :character   Class :character   Class :character   1st Qu.:2802  
+##  Mode  :character   Mode  :character   Mode  :character   Median :3540  
+##                                                           Mean   :2875  
+##                                                           3rd Qu.:4019  
+##                                                           Max.   :9706  
+##                                                           NA's   :47    
+##    LONGITUDE        LATITUDE_E     LONGITUDE_       REMARKS         
+##  Min.   :-14451   Min.   :   0   Min.   :-14455   Length:902297     
+##  1st Qu.:  7247   1st Qu.:   0   1st Qu.:     0   Class :character  
+##  Median :  8707   Median :   0   Median :     0   Mode  :character  
+##  Mean   :  6940   Mean   :1452   Mean   :  3509                     
+##  3rd Qu.:  9605   3rd Qu.:3549   3rd Qu.:  8735                     
+##  Max.   : 17124   Max.   :9706   Max.   :106220                     
+##                   NA's   :40                                        
+##      REFNUM      
+##  Min.   :     1  
+##  1st Qu.:225575  
+##  Median :451149  
+##  Mean   :451149  
+##  3rd Qu.:676723  
+##  Max.   :902297  
+## </code></pre>
+<p>Answer the question - which types of events based on EVTYPE are most harmful. Will first determines which event types cause the most injuries..</p>
+<ul>
+<li>Aggregate the data based on INJURIES against EVTYPE</li>
+<li>Display Top 10 Event Types based on sum of Injuries for the EVTYPE</li>
+</ul>
+<pre class="r"><code>dfa_injuries &lt;- aggregate(INJURIES ~ EVTYPE, data=df, FUN=sum, na.rm=T)
+head(dfa_injuries[order(-dfa_injuries$INJURIES), ], 10)</code></pre>
+<pre><code>##                EVTYPE INJURIES
+## 834           TORNADO    91346
+## 856         TSTM WIND     6957
+## 170             FLOOD     6789
+## 130    EXCESSIVE HEAT     6525
+## 464         LIGHTNING     5230
+## 275              HEAT     2100
+## 427         ICE STORM     1975
+## 153       FLASH FLOOD     1777
+## 760 THUNDERSTORM WIND     1488
+## 244              HAIL     1361</code></pre>
+<p>Now determine which event types cause the most fatalities - Aggregate the data based on FATALITIES against EVTYPE - Display Top 10 Event Types based on sum of Fatalities for the EVTYPE</p>
+<pre class="r"><code>dfa_fatalities &lt;- aggregate(FATALITIES ~ EVTYPE, data=df, FUN=sum, na.rm=T)
+head(dfa_fatalities[order(-dfa_fatalities$FATALITIES), ], 10)</code></pre>
+<pre><code>##             EVTYPE FATALITIES
+## 834        TORNADO       5633
+## 130 EXCESSIVE HEAT       1903
+## 153    FLASH FLOOD        978
+## 275           HEAT        937
+## 464      LIGHTNING        816
+## 856      TSTM WIND        504
+## 170          FLOOD        470
+## 585    RIP CURRENT        368
+## 359      HIGH WIND        248
+## 19       AVALANCHE        224</code></pre>
+</div>
 </div>
 
 
