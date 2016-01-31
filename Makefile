@@ -6,4 +6,4 @@ PA2_template.html: PA2_template.Rmd
 
 .PHONY: clean
 clean: 
-	rm -rf PA2_template.html PA2_template.md PA2_template_files 
+	rm -rf PA2_template.html PA2_template.md PA2_template_files PA2_template_cache
