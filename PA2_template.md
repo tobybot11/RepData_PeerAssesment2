@@ -30,6 +30,7 @@ rm(list=ls())
 library(R.utils)
 library(plotrix)
 library(plyr)
+library(reshape2)
 library(ggplot2)
 ```
 
@@ -392,7 +393,7 @@ total_damage
 ## 24      Winter Effects       23607750         800     23608550
 ```
 
-# Question #1 Results 
+## Question #1 Results 
 Will first determine which event types cause the most injuries..
 
 - Aggregate the data based on INJURIES against EV_GROUP
@@ -449,13 +450,12 @@ dfa_fatalities[order(-dfa_fatalities$FATALITIES), ][1:10,]
 - Next we will make a "Tornado" plot to display injuries and fatalities ordered by injuries.
 - A "Tornado" plot would allow us to visualize how injuries and fatalities compare and if there is correlation between them.
 - We will merge data together and then create the "Tornado" diagram with pyramid.plot from the plotrix library.
-- In order to make the "Tornado" diagram more illutrative we're going to ironically remove the 'Tornado" event type out of the data because clearly looking at the data above the "Tornados" have the greatest impact but will skew any graph we make.
 
 
 ```r
 df_merge <- merge(dfa_injuries, dfa_fatalities, by='EV_GROUP')
 
-tiny <- df_merge[order(df_merge$FATALITIES), ]
+tiny <- df_merge[order(df_merge$INJURIES), ]
 
 par(mar=pyramid.plot(tiny$INJURIES, tiny$FATALITIES, tiny$EV_GROUP, 
 			    top.labels=c("Injuries", "Event Type", "Fatalities"), 
@@ -469,14 +469,14 @@ par(mar=pyramid.plot(tiny$INJURIES, tiny$FATALITIES, tiny$EV_GROUP,
 ```
 
 <div class="figure">
-<img src="PA2_template_files/figure-html/unnamed-chunk-13-1.png" alt="**Fig. 1** - Health Impact of Weather Events Ordered by FATALITIES."  />
-<p class="caption">**Fig. 1** - Health Impact of Weather Events Ordered by FATALITIES.</p>
+<img src="PA2_template_files/figure-html/unnamed-chunk-13-1.png" alt="**Fig. 1** - Health Impact of Weather Events Ordered by INJURIES."  />
+<p class="caption">**Fig. 1** - Health Impact of Weather Events Ordered by INJURIES.</p>
 </div>
 
 - Analysis of this graph shows how injuries and fatalities are not entirely corrrelated
 - Using the 'Tornado' plot type allows us to see this lack of correlation easily.
 - Clearly in the fatalities ordered graph, 'Lightning', 'Cold', and 'Avalanche' pop out as being further outliers from just 'Surf & Seas'
-- Given the 'Tornados' event type skews the scale of the graph.. let's see what the latter graph looks like without that event in the data
+- In order to make the "Tornado" diagram more illutrative we're going to ironically remove the 'Tornado" event type out of the data because clearly looking at the data above the "Tornados" have the greatest impact but will skew any graph we make.
 
 
 ```r
@@ -516,14 +516,31 @@ par(mar=pyramid.plot(tiny$INJURIES, tiny$FATALITIES, tiny$EV_GROUP,
 - And sure enough we can see further outliers to the smooth injury curve.. 'Hurricanes', 'Tropical Storms', and 'Landslides' skews towards fatalities over injuries.
 - Curious what the injuries ordered graph looks like...
 
-# Question #2 Results 
+## Question #2 Results 
 
-- Let's make a histogram of the dollar damages caused by the various groupings of weather events.
+- Let's make a stacked bar chart of both the crop and property dollar damages caused by the various groupings of weather events.
+- Need to order the EV_GROUP column by the Total Damages via factor and levels
+- Need to create a 'Melted' data frame in order to show split between Property and Crop Damages
 
 
 ```r
-q<-ggplot(total_damage, aes(x=EV_GROUP, y=TotalDamage/1000000))+geom_bar(stat="identity")
-q + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+total_damage$labels <- factor(total_damage$EV_GROUP, 
+		    levels=total_damage$EV_GROUP[order(total_damage$TotalDamage)])
+
+damage_split <- melt(total_damage, 
+	     variable.name="TypeOfDamage", 
+	     measure.vars=c("PropertyDamage", "CropDamage"), value.name="Damage")
+
+ggplot(damage_split, aes(x=labels, y=Damage/1000000000)) + 
+  geom_bar(stat="identity", aes(fill=TypeOfDamage), colour="darkgreen") +
+  ggtitle("Crop and Property Damaage Caused by Different Types of Weather") +
+  xlab('Weather Event Group') +
+  ylab("Total US Dollar Damage (billions)") +
+  scale_fill_manual(values=c("#999999", "#00FF00"), 
+  					name="Type of Damage",
+  					breaks=c("CropDamage","PropertyDamage"),
+					labels=c("Crop","Property")) + 
+  theme(axis.text.x = element_text(angle = 65, hjust = 1))
 ```
 
 <div class="figure">
@@ -531,3 +548,6 @@ q + theme(axis.text.x = element_text(angle = 90, hjust = 1))
 <p class="caption">**Fig. 3** - Dollar damages of different types of Weather Events</p>
 </div>
 
+- We can see from this graph that Floods and Hurricanes supercede Tornados as causing the most property and crop damage of all weather events. Interesting given the disparity in the injury and fatalities between Floods, Hurricanes, and Tornados.
+- Also interestingly, Heat and Lightning were quite high in the health impacts but very low in terms of property damage.
+- In terms of Crop Damage versus Property Damage, we can see from the data that Crop Damage pales in comparsion to Property Damage for all weather groups except for one weather group 'Drought'
