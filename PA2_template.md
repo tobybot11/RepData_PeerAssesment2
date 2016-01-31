@@ -30,6 +30,7 @@ rm(list=ls())
 library(R.utils)
 library(plotrix)
 library(plyr)
+library(ggplot2)
 ```
 
 
@@ -416,6 +417,7 @@ dfa_injuries[order(-dfa_injuries$INJURIES), ][1:10,]
 ## 7              Fire     1608
 ## 17      Surf & Seas     1531
 ```
+- Events grouped together as 'Tornados' have had the greatest impact in terms of injuries, 9x greater than then next closest group 'Heat'
 
 Now determine which event types cause the most fatalities
 
@@ -441,37 +443,18 @@ dfa_fatalities[order(-dfa_fatalities$FATALITIES), ][1:10,]
 ## 16             Snow        265
 ## 1         Avalanche        225
 ```
+- Events grouped together as 'Tornados' have had the greatest impact in terms of fatalities, almost double the next closest group 'Heat'.
+- Interestingly, when we compare this list of the top 10 causes of injuries and fatalities, 'Surf & Seas' rises closer to the top in the fatalities list.
 
-- Make a "Tornado" plot to display injuries and fatalities ordered by injuries.
+- Next we will make a "Tornado" plot to display injuries and fatalities ordered by injuries.
 - A "Tornado" plot would allow us to visualize how injuries and fatalities compare and if there is correlation between them.
-- Merge data together and then create the "Tornado" diagram with pyramid.plot from the plotrix library.
-- In order to make the "Tornado" diagram more illutrative we're going to ironically remove the 'Tornado" event type out of the data because clearly looking at the data the "Tornados" have the greatest impact but will skew any graph we make.
+- We will merge data together and then create the "Tornado" diagram with pyramid.plot from the plotrix library.
+- In order to make the "Tornado" diagram more illutrative we're going to ironically remove the 'Tornado" event type out of the data because clearly looking at the data above the "Tornados" have the greatest impact but will skew any graph we make.
 
-- Remove this graph before publishing .. in order to stay under 
 
 ```r
 df_merge <- merge(dfa_injuries, dfa_fatalities, by='EV_GROUP')
-tiny <- df_merge[order(df_merge$INJURIES), ]
 
-par(mar=pyramid.plot(tiny$INJURIES, tiny$FATALITIES, tiny$EV_GROUP, 
-			    top.labels=c("Injuries", "Event Type", "Fatalities"), 
-			    main="Health Impact of Weather Events", 
-			    laxlab=c(1,100000), raxlab=c(1,100000),
-			    unit="", lxcol=rev(heat.colors(24)), rxcol=rev(heat.colors(24)), 
-			    gap=35000, space=0.1, 
-			    ppmar=c(3,2,3.5,4), labelcex=0.7,
-			    show.values=T, ndig=0
-			    ))
-```
-
-![](PA2_template_files/figure-html/unnamed-chunk-13-1.png)
-
-- In the above chart we can see that 'Surf & Sea' fatalities is a bit of an outlier in terms of having proportionally more fatalities then other categories in the same area of injury counts
-- Let's compare with the same plot ordered by fatalties to see if other outliers / lack of correlation pops out
-- Maybe keep this graph for publishing - 
-
-
-```r
 tiny <- df_merge[order(df_merge$FATALITIES), ]
 
 par(mar=pyramid.plot(tiny$INJURIES, tiny$FATALITIES, tiny$EV_GROUP, 
@@ -485,13 +468,15 @@ par(mar=pyramid.plot(tiny$INJURIES, tiny$FATALITIES, tiny$EV_GROUP,
 			    ))
 ```
 
-![](PA2_template_files/figure-html/unnamed-chunk-14-1.png)
+<div class="figure">
+<img src="PA2_template_files/figure-html/unnamed-chunk-13-1.png" alt="**Fig. 1** - Health Impact of Weather Events Ordered by FATALITIES."  />
+<p class="caption">**Fig. 1** - Health Impact of Weather Events Ordered by FATALITIES.</p>
+</div>
 
-- Comparison of these two graphs shows how injuries and fatalities are not entirely corrrelated
+- Analysis of this graph shows how injuries and fatalities are not entirely corrrelated
 - Using the 'Tornado' plot type allows us to see this lack of correlation easily.
-- Clearly in the 2nd fatalities ordered graph, 'Lightning', 'Cold', and 'Avalanche' pop out as being further outliers from just 'Surf & Seas'
+- Clearly in the fatalities ordered graph, 'Lightning', 'Cold', and 'Avalanche' pop out as being further outliers from just 'Surf & Seas'
 - Given the 'Tornados' event type skews the scale of the graph.. let's see what the latter graph looks like without that event in the data
-- Definately keep this graph for publishing
 
 
 ```r
@@ -523,26 +508,26 @@ par(mar=pyramid.plot(tiny$INJURIES, tiny$FATALITIES, tiny$EV_GROUP,
 			    ))
 ```
 
-![](PA2_template_files/figure-html/unnamed-chunk-15-1.png)
+<div class="figure">
+<img src="PA2_template_files/figure-html/unnamed-chunk-14-1.png" alt="**Fig. 2** - Health Impact of Weather Events Ordered by FATALITIES. With Tornados removed"  />
+<p class="caption">**Fig. 2** - Health Impact of Weather Events Ordered by FATALITIES. With Tornados removed</p>
+</div>
 
 - And sure enough we can see further outliers to the smooth injury curve.. 'Hurricanes', 'Tropical Storms', and 'Landslides' skews towards fatalities over injuries.
 - Curious what the injuries ordered graph looks like...
-- Remove this graph before publishing .. in order to stay under 
+
+# Question #2 Results 
+
+- Let's make a histogram of the dollar damages caused by the various groupings of weather events.
 
 
 ```r
-tiny <- df_sans[order(df_sans$INJURIES), ]
-
-par(mar=pyramid.plot(tiny$INJURIES, tiny$FATALITIES, tiny$EV_GROUP, 
-			    top.labels=c("Injuries", "Event Type", "Fatalities"), 
-			    main="Health Impact of Weather Events", 
-			    laxlab=c(1,10000), raxlab=c(1,10000),
-			    unit="", lxcol=rev(heat.colors(24)), rxcol=rev(heat.colors(24)), 
-			    gap=4000, space=0.1, 
-			    ppmar=c(3,2,3.5,4), labelcex=0.7,
-			    show.values=T, ndig=0
-			    ))
+q<-ggplot(total_damage, aes(x=EV_GROUP, y=TotalDamage/1000000))+geom_bar(stat="identity")
+q + theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
 
-![](PA2_template_files/figure-html/unnamed-chunk-16-1.png)
+<div class="figure">
+<img src="PA2_template_files/figure-html/unnamed-chunk-15-1.png" alt="**Fig. 3** - Dollar damages of different types of Weather Events"  />
+<p class="caption">**Fig. 3** - Dollar damages of different types of Weather Events</p>
+</div>
 
