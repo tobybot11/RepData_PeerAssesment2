@@ -6,7 +6,12 @@ output:
   html_document:
     keep_md: true
     toc: true
+    fig.captions: true
 ---
+
+```{r set-options, echo=FALSE}
+options(width = 100)
+```
 
 # Health and Economic Impact of Weather Events in the US determined thru Reproducible Data Analysis of NOAA Storm Data 
 
@@ -22,7 +27,7 @@ The goal of this data analysis assignment is to explore the NOAA Storm Database 
 
 ### Across the United States, which types of events have the greatest economic consequences?
 
-## Initial Setup
+## Getting Started : Initial Setup
 
 - Remove all objects from the workspace and load required libraries
 - Uncompress the original raw data file
@@ -32,6 +37,8 @@ The goal of this data analysis assignment is to explore the NOAA Storm Database 
 rm(list=ls())
 library(R.utils)
 library(plotrix)
+library(plyr)
+library(ggplot2)
 ```
 
 ```{r, cache=TRUE}
@@ -50,7 +57,7 @@ head(df,1)
 - Simplify data by removing unneeded columns for now, helps to speed things up and make analysis easier
 
 ```{r, cache=TRUE}
-dff <- df[, c('EVTYPE', 'INJURIES', 'FATALITIES')]
+dff <- df[, c('EVTYPE', 'INJURIES', 'FATALITIES', 'PROPDMG', 'PROPDMGEXP', 'CROPDMG', 'CROPDMGEXP')]
 ```
 - Because there are many redundnant event types, we need to group the redundant event types together. An example displayed here is related to variations in events related to 'Wind'; table of the first 10 of 216 event types with the word wind in them.
 
@@ -97,9 +104,92 @@ dff[grepl("EXPOSURE|HYPERTHERMIA|HYPOTHERMIA", dff$EVTYPE, ignore.case=T), eg] <
 table(dff$EV_GROUP)
 sum(is.na(dff$EV_GROUP))
 ```
-
 - There a few remaining event types in the database that don't make sense to bring forward. At this point, all remaining items have no injuries or fatalities.
 - One refinement on this filtering process for the future would be to deal with items that really cover two different groupings for example entries with FLOOD and WIND in their title.
+
+## Creating a dollar amount column for both property and crop damage
+
+- There are EXP exponent fields within the data. Let's take a look at their values.
+
+```{r, cache=TRUE}
+table(dff$PROPDMGEXP)
+table(dff$CROPDMGEXP)
+```
+
+- From this information let's convert these exponent columns into a number we can use later.
+- First starting with the alphanumeric versions of the exponents and expanding them
+- And then moving on to the numeric versions, convert PROPDMGEXP character column to numeric 
+- Create final PropertyDamage column
+- Repeate for Crop Damage lines
+
+```{r, cache=TRUE}
+
+dff$PropExpNumeric <- as.numeric(dff$PROPDMGEXP)
+dff$PropExp <- (10 ^ dff$PropExpNumeric)
+
+dff[is.na(dff$PropExpNumeric), c('PropExp')] <- 1
+dff[grepl("H", dff$PROPDMGEXP, ignore.case=T), c('PropExp')] <- (10 ^ 2)
+dff[grepl("K", dff$PROPDMGEXP, ignore.case=T), c('PropExp')] <- (10 ^ 3)
+dff[grepl("M", dff$PROPDMGEXP, ignore.case=T), c('PropExp')] <- (10 ^ 6)
+dff[grepl("B", dff$PROPDMGEXP, ignore.case=T), c('PropExp')] <- (10 ^ 9)
+dff$PropertyDamage <- dff$PROPDMG * dff$PropExp
+
+
+dff$PropExp <- NULL
+dff$PropExpNumeric <- NULL
+
+head(dff,2)
+dff[grepl("\\-", dff$PROPDMGEXP, ignore.case=T), ][1, ]
+dff[grepl("\\?", dff$PROPDMGEXP, ignore.case=T), ][1, ]
+dff[grepl("\\+", dff$PROPDMGEXP, ignore.case=T), ][1, ]
+dff[grepl("h", dff$PROPDMGEXP, ignore.case=F), ][1, ]
+dff[grepl("m", dff$PROPDMGEXP, ignore.case=F), ][1, ]
+dff$PROPDMG <- NULL
+dff$PROPDMGEXP <- NULL
+
+head(dff,2)
+```
+
+```{r, cache=TRUE}
+dff$CropExpNumeric <- as.numeric(dff$CROPDMGEXP)
+dff$CropExp <- (10 ^ dff$CropExpNumeric)
+
+dff[is.na(dff$CropExpNumeric), c('CropExp')] <- 1
+dff[grepl("H", dff$CROPDMGEXP, ignore.case=T), c('CropExp')] <- (10 ^ 2)
+dff[grepl("K", dff$CROPDMGEXP, ignore.case=T), c('CropExp')] <- (10 ^ 3)
+dff[grepl("M", dff$CROPDMGEXP, ignore.case=T), c('CropExp')] <- (10 ^ 6)
+dff[grepl("B", dff$CROPDMGEXP, ignore.case=T), c('CropExp')] <- (10 ^ 9)
+dff$CropDamage <- dff$CROPDMG * dff$CropExp
+
+
+dff$CropExp <- NULL
+dff$CropExpNumeric <- NULL
+
+head(dff,2)
+dff[grepl("\\?", dff$CROPDMGEXP, ignore.case=T), ][1, ]
+dff[grepl("m", dff$CROPDMGEXP, ignore.case=F), ][1, ]
+dff$CROPDMG <- NULL
+dff$CROPDMGEXP <- NULL
+
+head(dff,2)
+
+```
+
+- Aggregate Dollar Amounts for the different Event Type Groups against Property Damage, Crop Damage, and then Both for a Total.
+- Merge into a single data frame for final reporting
+
+```{r, cache=TRUE}
+
+property_damage <- aggregate(PropertyDamage ~ EV_GROUP, data=dff, FUN=sum)
+crop_damage <- aggregate(CropDamage ~ EV_GROUP, data=dff, FUN=sum)
+total_damage <- aggregate(PropertyDamage + CropDamage ~ EV_GROUP, data=dff, FUN=sum)
+total_damage <- rename(total_damage, c("PropertyDamage + CropDamage"="TotalDamage"))
+
+property_damage <- merge(property_damage, crop_damage, by='EV_GROUP')
+total_damage <- merge(property_damage, total_damage, by='EV_GROUP')
+
+total_damage
+```
 
 # Question #1 Results 
 Will first determine which event types cause the most injuries..
@@ -111,6 +201,7 @@ Will first determine which event types cause the most injuries..
 dfa_injuries <- aggregate(INJURIES ~ EV_GROUP, data=dff, FUN=sum, na.rm=T)
 dfa_injuries[order(-dfa_injuries$INJURIES), ][1:10,]
 ```
+- Events grouped together as 'Tornados' have had the greatest impact in terms of injuries, 9x greater than then next closest group 'Heat'
 
 Now determine which event types cause the most fatalities
 
@@ -121,33 +212,17 @@ Now determine which event types cause the most fatalities
 dfa_fatalities <- aggregate(FATALITIES ~ EV_GROUP, data=dff, FUN=sum, na.rm=T)
 dfa_fatalities[order(-dfa_fatalities$FATALITIES), ][1:10,]
 ```
+- Events grouped together as 'Tornados' have had the greatest impact in terms of fatalities, almost double the next closest group 'Heat'.
+- Interestingly, when we compare this list of the top 10 causes of injuries and fatalities, 'Surf & Seas' rises closer to the top in the fatalities list.
 
-- Make a "Tornado" plot to display injuries and fatalities ordered by injuries.
+- Next we will make a "Tornado" plot to display injuries and fatalities ordered by injuries.
 - A "Tornado" plot would allow us to visualize how injuries and fatalities compare and if there is correlation between them.
-- Merge data together and then create the "Tornado" diagram with pyramid.plot from the plotrix library.
-- In order to make the "Tornado" diagram more illutrative we're going to ironically remove the 'Tornado" event type out of the data because clearly looking at the data the "Tornados" have the greatest impact but will skew any graph we make.
+- We will merge data together and then create the "Tornado" diagram with pyramid.plot from the plotrix library.
+- In order to make the "Tornado" diagram more illutrative we're going to ironically remove the 'Tornado" event type out of the data because clearly looking at the data above the "Tornados" have the greatest impact but will skew any graph we make.
 
-- Remove this graph before publishing .. in order to stay under 
-```{r, cache=TRUE}
+```{r, cache=TRUE, fig.cap="**Fig. 1** - Health Impact of Weather Events Ordered by FATALITIES."}
 df_merge <- merge(dfa_injuries, dfa_fatalities, by='EV_GROUP')
-tiny <- df_merge[order(df_merge$INJURIES), ]
 
-par(mar=pyramid.plot(tiny$INJURIES, tiny$FATALITIES, tiny$EV_GROUP, 
-			    top.labels=c("Injuries", "Event Type", "Fatalities"), 
-			    main="Health Impact of Weather Events", 
-			    laxlab=c(1,100000), raxlab=c(1,100000),
-			    unit="", lxcol=rev(heat.colors(24)), rxcol=rev(heat.colors(24)), 
-			    gap=35000, space=0.1, 
-			    ppmar=c(3,2,3.5,4), labelcex=0.7,
-			    show.values=T, ndig=0
-			    ))
-```
-
-- In the above chart we can see that 'Surf & Sea' fatalities is a bit of an outlier in terms of having proportionally more fatalities then other categories in the same area of injury counts
-- Let's compare with the same plot ordered by fatalties to see if other outliers / lack of correlation pops out
-- Maybe keep this graph for publishing - 
-
-```{r, cache=TRUE}
 tiny <- df_merge[order(df_merge$FATALITIES), ]
 
 par(mar=pyramid.plot(tiny$INJURIES, tiny$FATALITIES, tiny$EV_GROUP, 
@@ -161,13 +236,12 @@ par(mar=pyramid.plot(tiny$INJURIES, tiny$FATALITIES, tiny$EV_GROUP,
 			    ))
 ```
 
-- Comparison of these two graphs shows how injuries and fatalities are not entirely corrrelated
+- Analysis of this graph shows how injuries and fatalities are not entirely corrrelated
 - Using the 'Tornado' plot type allows us to see this lack of correlation easily.
-- Clearly in the 2nd fatalities ordered graph, 'Lightning', 'Cold', and 'Avalanche' pop out as being further outliers from just 'Surf & Seas'
+- Clearly in the fatalities ordered graph, 'Lightning', 'Cold', and 'Avalanche' pop out as being further outliers from just 'Surf & Seas'
 - Given the 'Tornados' event type skews the scale of the graph.. let's see what the latter graph looks like without that event in the data
-- Definately keep this graph for publishing
 
-```{r, cache=TRUE}
+```{r, cache=TRUE, fig.cap="**Fig. 2** - Health Impact of Weather Events Ordered by FATALITIES. With Tornados removed"}
 df_sans <- df_merge[!grepl('Tornados', df_merge$EV_GROUP),]
 head(df_sans[order(-df_sans$INJURIES), ])
 
@@ -187,20 +261,15 @@ par(mar=pyramid.plot(tiny$INJURIES, tiny$FATALITIES, tiny$EV_GROUP,
 
 - And sure enough we can see further outliers to the smooth injury curve.. 'Hurricanes', 'Tropical Storms', and 'Landslides' skews towards fatalities over injuries.
 - Curious what the injuries ordered graph looks like...
-- Remove this graph before publishing .. in order to stay under 
 
-```{r, cache=TRUE}
-tiny <- df_sans[order(df_sans$INJURIES), ]
+# Question #2 Results 
 
-par(mar=pyramid.plot(tiny$INJURIES, tiny$FATALITIES, tiny$EV_GROUP, 
-			    top.labels=c("Injuries", "Event Type", "Fatalities"), 
-			    main="Health Impact of Weather Events", 
-			    laxlab=c(1,10000), raxlab=c(1,10000),
-			    unit="", lxcol=rev(heat.colors(24)), rxcol=rev(heat.colors(24)), 
-			    gap=4000, space=0.1, 
-			    ppmar=c(3,2,3.5,4), labelcex=0.7,
-			    show.values=T, ndig=0
-			    ))
+- Let's make a histogram of the dollar damages caused by the various groupings of weather events.
+
+```{r, cache=TRUE, fig.cap="**Fig. 3** - Dollar damages of different types of Weather Events"}
+
+q<-ggplot(total_damage, aes(x=EV_GROUP, y=TotalDamage/1000000))+geom_bar(stat="identity")
+q + theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 ```
 
