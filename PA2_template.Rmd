@@ -1,12 +1,14 @@
 ---
-title: "Reproducible Research: Peer Assessment 2"
+title: 'Reproducible Research: Peer Assessment 2'
 author: "Tobias Ford"
-date: "`r Sys.Date()`"
-output: 
+date: '`r Sys.Date()`'
+output:
   html_document:
-    keep_md: true
-    toc: true
-    fig.captions: true
+    fig.captions: yes
+    keep_md: yes
+    toc: yes
+  pdf_document:
+    toc: yes
 ---
 
 ```{r set-options, echo=FALSE}
@@ -192,7 +194,7 @@ total_damage <- merge(property_damage, total_damage, by='EV_GROUP')
 total_damage
 ```
 
-# Question #1 Results 
+## Question #1 Results 
 Will first determine which event types cause the most injuries..
 
 - Aggregate the data based on INJURIES against EV_GROUP
@@ -262,7 +264,7 @@ par(mar=pyramid.plot(tiny$INJURIES, tiny$FATALITIES, tiny$EV_GROUP,
 - And sure enough we can see further outliers to the smooth injury curve.. 'Hurricanes', 'Tropical Storms', and 'Landslides' skews towards fatalities over injuries.
 - Curious what the injuries ordered graph looks like...
 
-# Question #2 Results 
+## Question #2 Results 
 
 - Let's make a stacked bar chart of both the crop and property dollar damages caused by the various groupings of weather events.
 - Need to order the EV_GROUP column by the Total Damages via factor and levels
